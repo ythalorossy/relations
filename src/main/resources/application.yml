@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: relations
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/relations
+    username: postgres
+    password: postgres
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+
+server:
+  servlet:
+    context-path: /api
+

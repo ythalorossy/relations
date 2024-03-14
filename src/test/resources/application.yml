@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: relations
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/relations_test
+    username: postgres
+    password: postgres
+  jpa:
+    generate-ddl: true
+    show-sql: true
+
+server:
+  servlet:
+    context-path: /api
+
