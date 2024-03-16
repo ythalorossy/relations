@@ -3,6 +3,7 @@ package com.ythalorossy.relations.users;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +23,8 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "username")
+    private String username;
     @Column(name = "first_name")
     private String firstName;
     @Column(name = "last_name")
@@ -31,7 +34,7 @@ public class User {
     @Column(name = "uuid")
     private String uuid;
 
-    @OneToMany(mappedBy = "fromUser")
+    @OneToMany(mappedBy = "fromUser", cascade = {CascadeType.MERGE})
     private List<UserRelationship> following = new ArrayList<>();
 
     @OneToMany(mappedBy = "toUser")
