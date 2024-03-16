@@ -5,13 +5,10 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,16 +31,11 @@ public class User {
     @Column(name = "uuid")
     private String uuid;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "users_followers",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "follower_id")
-    )
-    private List<User> followers = new ArrayList<>();
+    @OneToMany(mappedBy = "fromUser")
+    private List<UserRelationship> following = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "followers", fetch = FetchType.LAZY)
-    private List<User> following = new ArrayList<>();
+    @OneToMany(mappedBy = "toUser")
+    private List<UserRelationship> followers = new ArrayList<>();
 
     public User(Long id, String firstName, String lastName, String email, String uuid) {
         this.id = id;

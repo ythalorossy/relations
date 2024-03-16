@@ -1,6 +1,6 @@
 package com.ythalorossy.relations.users;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private UserRepository userRepository;
+    private UserRelationshipRepository userRelationshipRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,UserRelationshipRepository userRelationshipRepository) {
         this.userRepository = userRepository;
+        this.userRelationshipRepository = userRelationshipRepository;
     }
 
     @SuppressWarnings("null")
@@ -58,11 +60,16 @@ public class UserService {
         User userToFollow = userRepository.findById(idToFollow)
                 .orElseThrow(() -> new UserException(String.format("User %d not found", idToFollow)));
 
-        user.getFollowing().add(userToFollow);
-        userToFollow.getFollowers().add(user);
+        UserRelationship userRelationship = new UserRelationship();
+        userRelationship.setFromUser(user);
+        userRelationship.setToUser(userToFollow);
+        userRelationship.setSince(LocalDateTime.now());
+
+        userRelationshipRepository.save(userRelationship);
+
+        user.getFollowing().add(userRelationship);
 
         userRepository.save(user);
-        userRepository.save(userToFollow);
     }
 
     private User convertToEntity(UserDto dto) {
@@ -81,28 +88,43 @@ public class UserService {
 
     private UserDto convertToDto(User user) {
         
-        final List<UserDto> following = 
-                user.getFollowing().stream().map(this::shallowUserDto).collect(Collectors.toList());
+        final List<UserRelationshipDto> following = 
+                user.getFollowing().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
         
-        final List<UserDto> followers = 
-                user.getFollowers().stream().map(this::shallowUserDto).collect(Collectors.toList());
+        final List<UserRelationshipDto> followers = 
+                user.getFollowers().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
         
-        UserDto userDto = shallowUserDto(user);
-        userDto.setFollowers(followers);
-        userDto.setFollowing(following);
-
-        return userDto;
-    }
-
-    private UserDto shallowUserDto(User user) {
         return UserDto.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .LastName(user.getLastName())
-                .email(user.getEmail())
-                .followers(Collections.emptyList())
-                .following(Collections.emptyList())
-                .build();
+            .id(user.getId())
+            .firstName(user.getFirstName())
+            .LastName(user.getLastName())
+            .email(user.getEmail())
+            .following(following)
+            .followers(followers)
+        .build();
     }
+
+    private UserRelationshipDto convertToDto(UserRelationship userRelationship) {
+        return UserRelationshipDto.builder()
+            .fromUser(userRelationship.getFromUser().getId())
+            .toUser(userRelationship.getToUser().getId())
+            .since(userRelationship.getSince())
+        .build();
+    }
+
+    // private UserDto shallowUserDto(User user) {
+    //     return UserDto.builder()
+    //             .id(user.getId())
+    //             .firstName(user.getFirstName())
+    //             .LastName(user.getLastName())
+    //             .email(user.getEmail())
+    //             .followers(Collections.emptyList())
+    //             .following(Collections.emptyList())
+    //             .build();
+    // }
 
 }

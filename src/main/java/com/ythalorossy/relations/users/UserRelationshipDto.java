@@ -1,7 +1,6 @@
 package com.ythalorossy.relations.users;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
-    Long id;
-    String firstName;
-    String LastName;
-    String email;
-    List<UserRelationshipDto> followers;
-    List<UserRelationshipDto> following;
+public class UserRelationshipDto {
+    Long fromUser;
+    Long toUser;
     LocalDateTime since;
 }
 
