@@ -122,4 +122,26 @@ public class TweetServiceIntegrationTest {
                 .allMatch(t -> t.getContent().matches(String.format("%s_\\d+", CONTENT)));
     }
 
+    @Test
+    public void givenTweet_whenFavoritingTweet_thenTweetIsFavorited() {
+
+        final User user = userService.persist(createUserForTest());
+
+        final int numberOfTweets = 2;
+        createTweetsDtoForTest(user.getId(), numberOfTweets).forEach(tweetService::tweet);
+
+        List<TweetDto> tweets = tweetService.getTweetsByUser(user.getId());
+
+        tweets.forEach(t -> tweetService.setTweetAsFavorite(user.getId(), t.getId()));
+
+        List<TweetFavoriteDto> favoriteTweetByUser = tweetService.getFavoriteTweetByUser(user.getId());
+
+        assertThat(favoriteTweetByUser).size().isEqualTo(numberOfTweets);
+        assertThat(favoriteTweetByUser)
+                .hasSize(numberOfTweets)
+                .allMatch(t -> t.getUserId().equals(user.getId()))
+                .allMatch(t -> t.getTweetId() != null)
+                .allMatch(t -> t.getCreatedAt() != null);
+    }
+
 }

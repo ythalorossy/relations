@@ -45,4 +45,14 @@ public class Tweet {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     LocalDateTime createAt;
+
+    public Tweet(Long id, User user, TweetType type, String content, LocalDateTime createAt) {
+        this.id = id;
+        this.user = user;
+        this.type = type;
+        this.content = content;
+        this.createAt = createAt;
+    }
+
+
 }
