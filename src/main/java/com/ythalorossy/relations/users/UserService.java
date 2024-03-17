@@ -2,7 +2,6 @@ package com.ythalorossy.relations.users;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -21,14 +20,14 @@ public class UserService {
         this.userRelationshipRepository = userRelationshipRepository;
     }
 
-    public UserDto getById(Long userId) {
+    public UserDto getUser(Long userId) {
 
-        final User user = getUser(userId);
+        final User user = retrieveUser(userId);
 
         return convertToDto(user);
     }
 
-    public User getUser(Long userId) {
+    public User retrieveUser(Long userId) {
 
         if (userId == null)
             throw new UserException(String.format("User ID cannot be empty"));
@@ -36,16 +35,16 @@ public class UserService {
         final User user = userRepository
                 .findById(userId)
                 .orElseThrow(() -> new UserException(String.format("User %d not found", userId)));
-                
+
         return user;
     }
 
-    public List<UserDto> getAll() {
+    public List<UserDto> getUsers() {
         List<User> users = userRepository.findAll();
         return convertToDto(users);
     }
 
-    public UserDto persist(UserDto dto) {
+    public UserDto createUSer(UserDto dto) {
         User user = this.persist(convertToEntity(dto));
         return convertToDto(user);
     }
@@ -57,29 +56,30 @@ public class UserService {
         }
 
         user.setModifedAt(LocalDateTime.now());
-        
+
         return userRepository.save(user);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void follow(Long id, Long idToFollow) {
+    public void followAnotherUser(Long userId, Long userIdToFollow) {
 
-        if (id == null)
+        if (userId == null)
             throw new UserException(String.format("User ID cannot be empty"));
 
-        if (idToFollow == null)
+        if (userIdToFollow == null)
             throw new UserException(String.format("User ID to Follow cannot be empty"));
-            
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new UserException(String.format("User %d not found", id)));
-        
-        User userToFollow = userRepository.findById(idToFollow)
-            .orElseThrow(() -> new UserException(String.format("User %d not found", idToFollow)));
-        
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(String.format("User %d not found", userId)));
+
+        User userToFollow = userRepository.findById(userIdToFollow)
+                .orElseThrow(() -> new UserException(String.format("User %d not found", userIdToFollow)));
+
         userRelationshipRepository.findByFromUserAndToUser(user, userToFollow)
-            .ifPresent(t -> {
-                throw new UserException(String.format("User %d already follows user %d", t.getFromUser().getId(), t.getToUser().getId()));
-            });
+                .ifPresent(t -> {
+                    throw new UserException(String.format("User %d already follows user %d", t.getFromUser().getId(),
+                            t.getToUser().getId()));
+                });
 
         UserRelationship userRelationship = new UserRelationship();
         userRelationship.setFromUser(user);

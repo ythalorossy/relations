@@ -61,7 +61,7 @@ public class UserServiceTest {
 
         when(repository.findById(anyLong())).thenReturn(Optional.of(user));
 
-        UserDto userDto = userService.getById(id);
+        UserDto userDto = userService.getUser(id);
         assertNotNull(userDto);
         assertThat(userDto, allOf(
             hasProperty("firstName", equalTo(firstName)),
@@ -80,7 +80,7 @@ public class UserServiceTest {
 
         when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(UserException.class, () -> userService.getById(id));
+        assertThrows(UserException.class, () -> userService.getUser(id));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class UserServiceTest {
 
         when(repository.findAll()).thenReturn(Collections.singletonList(user));
 
-        List<UserDto> all = userService.getAll();
+        List<UserDto> all = userService.getUsers();
 
         assertThat(all, hasSize(1));
     }
@@ -115,7 +115,7 @@ public class UserServiceTest {
         when(userRelationshipRepository.findByFromUserAndToUser(user, user_2))
             .thenReturn(Optional.empty());
         
-        userService.follow(id, id_2);
+        userService.followAnotherUser(id, id_2);
         verify(repository, atLeast(2)).findById(anyLong());
         verify(userRelationshipRepository, atLeastOnce()).findByFromUserAndToUser(user, user_2);
         verify(repository, atLeastOnce()).save(any(User.class));
@@ -141,7 +141,7 @@ public class UserServiceTest {
         when(userRelationshipRepository.findByFromUserAndToUser(user, user_2))
             .thenReturn(Optional.of(userRelationship));
         
-        assertThatThrownBy(()->userService.follow(id, id_2))
+        assertThatThrownBy(()->userService.followAnotherUser(id, id_2))
             .isInstanceOf(UserException.class);
 
         verify(repository, atLeast(2)).findById(anyLong());

@@ -101,7 +101,7 @@ public class UserServiceIntegrationTest {
         
         final User userToFollow = userService.persist(new User(null, firstName1, lastName1, email1, null));
 
-        userService.follow(user.getId(), userToFollow.getId());
+        userService.followAnotherUser(user.getId(), userToFollow.getId());
 
         assertThat(user, notNullValue());
         assertThat(user.getId(), notNullValue());

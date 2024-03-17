@@ -27,7 +27,7 @@ public class UserResource {
     @GetMapping("/")
     public ResponseEntity<List<UserDto>> getAll() {
 
-        List<UserDto> users = userService.getAll();
+        List<UserDto> users = userService.getUsers();
 
         return ResponseEntity.ok(users);
     }
@@ -35,7 +35,7 @@ public class UserResource {
     @GetMapping("{id}")
     public ResponseEntity<UserDto> getById(@PathVariable Long id) {
 
-        UserDto byId = userService.getById(id);
+        UserDto byId = userService.getUser(id);
 
         return ResponseEntity.ok(byId);
     }
@@ -43,7 +43,7 @@ public class UserResource {
     @PostMapping
     public ResponseEntity<UserDto> persit(@RequestBody UserDto requestBody) {
         
-        UserDto userDto = userService.persist(requestBody);
+        UserDto userDto = userService.createUSer(requestBody);
         
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -57,7 +57,7 @@ public class UserResource {
     @PatchMapping("{id}/follow/{idToFollow}")
     public ResponseEntity<Void> postMethodName(@PathVariable Long id, @PathVariable Long idToFollow) {
 
-        userService.follow(id, idToFollow);
+        userService.followAnotherUser(id, idToFollow);
 
         return ResponseEntity.noContent().build();
     }

@@ -32,7 +32,7 @@ public class UserResourceMvcTest {
 
         UserDto userDto = UserDto.builder().id(_100L).firstName(YTHALO).LastName(SALDANHA).email(YTHALO_EMAIL).build();
 
-        Mockito.when(userService.getById(anyLong())).thenReturn(userDto);
+        Mockito.when(userService.getUser(anyLong())).thenReturn(userDto);
 
         mvc.perform(MockMvcRequestBuilders
                 .get("/users/100")

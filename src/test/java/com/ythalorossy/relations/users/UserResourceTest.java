@@ -43,7 +43,7 @@ public class UserResourceTest {
 
         // Mock dependencies    
         UserDto userDto = UserDto.builder().id(_100L).firstName(YTHALO).LastName(SALDANHA).email(YTHALO_EMAIL).build();
-        when(userService.persist(any(UserDto.class))).thenReturn(userDto);
+        when(userService.createUSer(any(UserDto.class))).thenReturn(userDto);
         
         // Call Resource
         UserDto userDtoRequest = UserDto.builder().firstName(YTHALO).LastName(SALDANHA).email(YTHALO_EMAIL).build();
