@@ -1,5 +1,6 @@
 package com.ythalorossy.relations.users;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,6 +36,12 @@ public class User {
     private String email;
     @Column(name = "uuid")
     private String uuid;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "modified_at")
+    private LocalDateTime modifedAt;
 
     @OneToMany(mappedBy = "fromUser", cascade = {CascadeType.MERGE})
     private List<UserRelationship> following = new ArrayList<>();

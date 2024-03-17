@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class UserRelationshipDto {
     Long fromUser;
     Long toUser;
-    LocalDateTime since;
+    LocalDateTime createdAt;
 }
 

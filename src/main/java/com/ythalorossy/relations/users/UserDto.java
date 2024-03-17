@@ -19,6 +19,7 @@ public class UserDto {
     String email;
     List<UserRelationshipDto> followers;
     List<UserRelationshipDto> following;
-    LocalDateTime since;
+    LocalDateTime createdAt;
+    LocalDateTime modifiedAt;
 }
 

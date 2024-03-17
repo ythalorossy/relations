@@ -2,6 +2,7 @@ package com.ythalorossy.relations.users;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -13,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private UserRepository userRepository;
+    private UserRelationshipRepository userRelationshipRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserRelationshipRepository userRelationshipRepository) {
         this.userRepository = userRepository;
+        this.userRelationshipRepository = userRelationshipRepository;
     }
 
     public UserDto getById(Long userId) {
@@ -48,7 +51,13 @@ public class UserService {
     }
 
     public User persist(User user) {
-        user.setUuid(UUID.randomUUID().toString());
+        if (user.getId() == null) {
+            user.setUuid(UUID.randomUUID().toString());
+            user.setCreatedAt(LocalDateTime.now());
+        }
+
+        user.setModifedAt(LocalDateTime.now());
+        
         return userRepository.save(user);
     }
 
@@ -58,21 +67,28 @@ public class UserService {
         if (id == null)
             throw new UserException(String.format("User ID cannot be empty"));
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserException(String.format("User %d not found", id)));
-
         if (idToFollow == null)
             throw new UserException(String.format("User ID to Follow cannot be empty"));
-
+            
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UserException(String.format("User %d not found", id)));
+        
         User userToFollow = userRepository.findById(idToFollow)
-                .orElseThrow(() -> new UserException(String.format("User %d not found", idToFollow)));
+            .orElseThrow(() -> new UserException(String.format("User %d not found", idToFollow)));
+        
+        userRelationshipRepository.findByFromUserAndToUser(user, userToFollow)
+            .ifPresent(t -> {
+                throw new UserException(String.format("User %d already follows user %d", t.getFromUser().getId(), t.getToUser().getId()));
+            });
 
         UserRelationship userRelationship = new UserRelationship();
         userRelationship.setFromUser(user);
         userRelationship.setToUser(userToFollow);
-        userRelationship.setSince(LocalDateTime.now());
+        userRelationship.setCreatedAt(LocalDateTime.now());
 
         user.getFollowing().add(userRelationship);
+
+        user.setModifedAt(LocalDateTime.now());
 
         userRepository.save(user);
     }
@@ -108,6 +124,8 @@ public class UserService {
                 .email(user.getEmail())
                 .following(following)
                 .followers(followers)
+                .createdAt(user.getCreatedAt())
+                .modifiedAt(user.getModifedAt())
                 .build();
     }
 
@@ -115,7 +133,7 @@ public class UserService {
         return UserRelationshipDto.builder()
                 .fromUser(userRelationship.getFromUser().getId())
                 .toUser(userRelationship.getToUser().getId())
-                .since(userRelationship.getSince())
+                .createdAt(userRelationship.getCreatedAt())
                 .build();
     }
 }

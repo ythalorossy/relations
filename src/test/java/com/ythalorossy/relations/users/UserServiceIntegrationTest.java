@@ -18,6 +18,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import jakarta.persistence.Table;
+
 @SpringBootTest
 @Testcontainers
 public class UserServiceIntegrationTest {
@@ -61,7 +63,9 @@ public class UserServiceIntegrationTest {
     @SuppressWarnings("null")
     @AfterEach
     void tearDown() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "users_followers", "users" );
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, 
+            UserRelationship.class.getAnnotationsByType(Table.class)[0].name(),
+            User.class.getAnnotationsByType(Table.class)[0].name());
     }
 
     @Test

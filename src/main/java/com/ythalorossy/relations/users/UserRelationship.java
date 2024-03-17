@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "users_followers")
+@Table(name = "users_relationship")
 public class UserRelationship {
 
     @Id
@@ -25,13 +25,13 @@ public class UserRelationship {
     Long id;
 
     @ManyToOne
-    @JoinColumn(name = "from_id")
+    @JoinColumn(name = "from_user")
     User fromUser;
 
     @ManyToOne
-    @JoinColumn(name = "to_id")
+    @JoinColumn(name = "to_user")
     User toUser;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime since;
+    private LocalDateTime createdAt;
 }
