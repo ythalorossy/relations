@@ -35,22 +35,52 @@ public class TweetResource {
         return ResponseEntity.created(location).body(response);
     }
 
-
     @GetMapping("/{id}")
-    public ResponseEntity<TweetDto> getTweetById(@PathVariable Long id) {
+    public ResponseEntity<TweetDto> getTweet(@PathVariable Long id) {
 
-        TweetDto tweetDto = tweetService.getById(id);
+        TweetDto tweetDto = tweetService.getTweet(id);
 
         return ResponseEntity.ok(tweetDto);
     }
 
-    
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<TweetDto>> getAllTweetByUser(@PathVariable Long id) {
+    public ResponseEntity<List<TweetDto>> getTweetsByUser(@PathVariable Long userId) {
 
-        List<TweetDto> tweets = tweetService.getAllTweetsByUserId(id);
+        List<TweetDto> tweets = tweetService.getTweetsByUser(userId);
 
         return ResponseEntity.ok(tweets);
+    }
+
+    @GetMapping("/user/{id}/favorites")
+    public ResponseEntity<List<TweetFavoriteDto>> getFavoriteTweetsByUser(@PathVariable Long userId) {
+
+        List<TweetFavoriteDto> tweets = tweetService.getFavoriteTweetByUser(userId);
+
+        return ResponseEntity.ok(tweets);
+    }
+
+    @PostMapping("/favorites")
+    public ResponseEntity<TweetFavoriteDto> favoriteTweet(@RequestBody TweetFavoriteDto tweetFavoriteDto) {
+
+        final Long userId = tweetFavoriteDto.getUserId();
+        final Long tweetId = tweetFavoriteDto.getTweetId();
+
+        TweetFavoriteDto response = tweetService.setTweetAsFavorite(userId, tweetId);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
+    }
+
+    @GetMapping("/favorites/{favoriteId}")
+    public ResponseEntity<TweetFavoriteDto> getFavoriteTweet(@PathVariable Long favoriteId) {
+
+        TweetFavoriteDto response = tweetService.getFavoriteTweet(favoriteId);
+
+        return ResponseEntity.ok(response);
     }
 
 }

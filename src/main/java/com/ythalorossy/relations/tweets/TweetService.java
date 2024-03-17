@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ythalorossy.relations.users.User;
-import com.ythalorossy.relations.users.UserException;
 import com.ythalorossy.relations.users.UserService;
 
 @Service
@@ -18,16 +17,19 @@ public class TweetService {
 
     private TweetRepository tweetRepository;
     private UserService userService;
+    private TweetFavoriteRepository tweetFavoriteRepository;
 
-    public TweetService(TweetRepository tweetRepository, UserService userService) {
+    public TweetService(TweetRepository tweetRepository, UserService userService,
+            TweetFavoriteRepository tweetFavoriteRepository) {
         this.tweetRepository = tweetRepository;
         this.userService = userService;
+        this.tweetFavoriteRepository = tweetFavoriteRepository;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     public TweetDto tweet(TweetDto tweetDto) {
 
-        User user = userService.getUser(tweetDto.getUserId());
+        User user = userService.retrieveUser(tweetDto.getUserId());
 
         Tweet tweet = new Tweet();
         tweet.setType(TweetType.valueOf(tweetDto.getTweetType()));
@@ -40,26 +42,74 @@ public class TweetService {
         return convertToDto(tweetPersisted);
     }
 
-    public TweetDto getById(Long tweetId) {
+    public TweetDto getTweet(Long tweetId) {
 
-        if (tweetId == null)
-            throw new UserException(String.format("Tweet ID cannot be empty"));
-
-        final Tweet tweet = tweetRepository
-                .findById(tweetId)
-                .orElseThrow(() -> new UserException(String.format("Tweed %d not found", tweetId)));
+        final Tweet tweet = retrieveTweet(tweetId);
 
         return convertToDto(tweet);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<TweetDto> getAllTweetsByUserId(Long userId) {
+    public List<TweetDto> getTweetsByUser(Long userId) {
 
-        User user = userService.getUser(userId);
+        User user = userService.retrieveUser(userId);
 
         List<Tweet> tweets = tweetRepository.findAllByUser(user);
 
         return tweets.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    public TweetFavoriteDto setTweetAsFavorite(Long userId, Long tweetId) {
+
+        User user = userService.retrieveUser(userId);
+
+        Tweet tweet = retrieveTweet(tweetId);
+
+        TweetFavorite tweetFavorite = new TweetFavorite();
+        tweetFavorite.setUser(user);
+        tweetFavorite.setTweet(tweet);
+        tweetFavorite.setCreatedAt(LocalDateTime.now());
+
+        tweetFavoriteRepository.save(tweetFavorite);
+
+        return convertTweetFavoriteToDto(tweetFavorite);
+    }
+
+    public TweetFavoriteDto getFavoriteTweet(Long favoriteId) {
+
+        TweetFavorite tweetFavorite = retrieveTweetFavorite(favoriteId);
+
+        return convertTweetFavoriteToDto(tweetFavorite);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<TweetFavoriteDto> getFavoriteTweetByUser(Long userId) {
+
+        User user = userService.retrieveUser(userId);
+
+        List<TweetFavorite> tweetFavorites = tweetFavoriteRepository.findAllByUser(user);
+
+        return tweetFavorites.stream().map(this::convertTweetFavoriteToDto).collect(Collectors.toList());
+    }
+
+    private TweetFavorite retrieveTweetFavorite(Long favoriteId) {
+        if (favoriteId == null)
+            throw new TweetException(String.format("Tweet Favoritre ID cannot be empty"));
+
+        TweetFavorite tweetFavorite = tweetFavoriteRepository
+                .findById(favoriteId)
+                .orElseThrow(() -> new TweetException(String.format("Tweet Favorite %d not found", favoriteId)));
+        return tweetFavorite;
+    }
+
+    private Tweet retrieveTweet(Long tweetId) {
+        if (tweetId == null)
+            throw new TweetException(String.format("Tweet ID cannot be empty"));
+
+        final Tweet tweet = tweetRepository
+                .findById(tweetId)
+                .orElseThrow(() -> new TweetException(String.format("Tweet %d not found", tweetId)));
+        return tweet;
     }
 
     private TweetDto convertToDto(Tweet tweet) {
@@ -71,6 +121,15 @@ public class TweetService {
                 .createdAt(tweet.getCreateAt())
                 .userId(tweet.getUser().getId())
                 .build();
+    }
 
+    private TweetFavoriteDto convertTweetFavoriteToDto(TweetFavorite tweetFavorite) {
+
+        return TweetFavoriteDto.builder()
+                .id(tweetFavorite.getId())
+                .userId(tweetFavorite.getUser().getId())
+                .tweetId(tweetFavorite.getTweet().getId())
+                .createdAt(tweetFavorite.getCreatedAt())
+                .build();
     }
 }

@@ -113,7 +113,7 @@ public class TweetServiceIntegrationTest {
         final int numberOfTweets = 5;
         createTweetsDtoForTest(user.getId(), numberOfTweets).forEach(tweetService::tweet);
 
-        List<TweetDto> allTweetsByUserId = tweetService.getAllTweetsByUserId(user.getId());
+        List<TweetDto> allTweetsByUserId = tweetService.getTweetsByUser(user.getId());
 
         assertThat(allTweetsByUserId).size().isEqualTo(5);
         assertThat(allTweetsByUserId)
