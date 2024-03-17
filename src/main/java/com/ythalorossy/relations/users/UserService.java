@@ -18,14 +18,23 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    @SuppressWarnings("null")
-    public UserDto getById(Long id) {
+    public UserDto getById(Long userId) {
 
-        final User user = userRepository
-                .findById(id)
-                .orElseThrow(() -> new UserException(String.format("User %d not found", id)));
+        final User user = getUser(userId);
 
         return convertToDto(user);
+    }
+
+    public User getUser(Long userId) {
+
+        if (userId == null)
+            throw new UserException(String.format("User ID cannot be empty"));
+
+        final User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UserException(String.format("User %d not found", userId)));
+                
+        return user;
     }
 
     public List<UserDto> getAll() {
